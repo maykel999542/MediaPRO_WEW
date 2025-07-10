@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>¿Quieres casarte conmigo?</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #ff69b4;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      overflow: hidden;
+      transition: background-color 2s;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px #ff69b4;
+    }
+
+    #corazon {
+      font-size: 100px;
+      color: red;
+      animation: latido 1s infinite;
+      margin: 20px 0;
+    }
+
+    @keyframes latido {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+
+    .botones {
+      display: flex;
+      gap: 20px;
+    }
+
+    button {
+      font-size: 1.5rem;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 10px;
+      background-color: #ff1493;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff1493;
+    }
+
+    button:hover {
+      background-color: #ff85b7;
+    }
+
+    #mensajeFinal {
+      font-size: 1.8rem;
+      margin-top: 30px;
+      white-space: pre-wrap;
+      color: #ff69b4;
+    }
+
+    #contador {
+      font-size: 1.5rem;
+      color: #ffffff;
+      margin-top: 10px;
+      text-shadow: 0 0 5px #ff69b4;
+    }
+
+    #campoRechazo {
+      margin-top: 20px;
+      display: none;
+    }
+
+    #campoRechazo input {
+      padding: 10px;
+      font-size: 1.2rem;
+      border-radius: 10px;
+      border: 2px solid #ff1493;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .fragmento {
+      position: absolute;
+      font-size: 24px;
+      color: red;
+      animation: romper 2s forwards;
+      pointer-events: none;
+    }
+
+    @keyframes romper {
+      to {
+        transform: translate(var(--x), var(--y)) rotate(var(--rot));
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>¿Quieres casarte conmigo?</h1>
+  <div id="corazon">❤️</div>
+  <div class="botones" id="botones">
+    <button onclick="rechazar()">No</button>
+    <button onclick="aceptar()">Sí</button>
+  </div>
+  <div id="contador"></div>
+  <div id="campoRechazo">
+    <p>Introduce la contraseña para rechazar (pega 💔):</p>
+    <input type="text" id="inputClave" placeholder="💔" />
+    <button onclick="confirmarRechazo()">Confirmar</button>
+  </div>
+  <div id="mensajeFinal"></div>
+
+  <script>
+    const corazon = document.getElementById('corazon');
+    const mensajeFinal = document.getElementById('mensajeFinal');
+    const contador = document.getElementById('contador');
+    const campoRechazo = document.getElementById('campoRechazo');
+    const inputClave = document.getElementById('inputClave');
+    const botones = document.getElementById('botones');
+
+    let cuenta = 10;
+    let intervalo;
+
+    function aceptar() {
+      mensajeFinal.textContent = "¡Aceptaste! 💍\nNuestro amor será eterno ❤️";
+      botones.style.display = 'none';
+      iniciarContador(() => {
+        romperCorazon();
+        setTimeout(() => {
+          apagarPantalla("🖤 El amor fue tan grande que la página colapsó...");
+        }, 5000);
+      }, "❤️ El corazón se romperá en");
+    }
+
+    function rechazar() {
+      mensajeFinal.textContent = "¿Estás seguro? 😟";
+      botones.style.display = 'none';
+      campoRechazo.style.display = 'block';
+      cuenta = 10;
+      iniciarContador(() => {
+        // Si no ha confirmado con la contraseña en 10s
+        confirmarRechazo(true);
+      }, "💔 Tiempo para confirmar rechazo:");
+    }
+
+    function confirmarRechazo(auto = false) {
+      const clave = inputClave.value.trim();
+      campoRechazo.style.display = 'none';
+      contador.textContent = '';
+      clearInterval(intervalo);
+      if (clave === '💔') {
+        corazon.style.display = 'none';
+        mensajeFinal.textContent = "💔 Has rechazado el amor.\nEl corazón se ha roto en silencio...";
+      } else {
+        mensajeFinal.textContent = "😱 Rechazo inválido... sistema colapsando.";
+        setTimeout(() => {
+          apagarPantalla("🕳️ El amor fue ignorado. Oscuridad eterna...");
+        }, 4000);
+      }
+    }
+
+    function iniciarContador(callback, textoBase) {
+      clearInterval(intervalo);
+      contador.textContent = `${textoBase} ${cuenta}`;
+      intervalo = setInterval(() => {
+        cuenta--;
+        contador.textContent = `${textoBase} ${cuenta}`;
+        if (cuenta <= 0) {
+          clearInterval(intervalo);
+          contador.textContent = '';
+          callback();
+        }
+      }, 1000);
+    }
+
+    function romperCorazon() {
+      corazon.style.display = 'none';
+      const rect = corazon.getBoundingClientRect();
+      for (let i = 0; i < 50; i++) {
+        const frag = document.createElement('div');
+        frag.classList.add('fragmento');
+        frag.textContent = '❤️';
+        frag.style.left = `${rect.left + rect.width / 2}px`;
+        frag.style.top = `${rect.top + rect.height / 2}px`;
+
+        const x = (Math.random() - 0.5) * 400 + 'px';
+        const y = (Math.random() - 0.5) * 400 + 'px';
+        const rot = (Math.random() * 720 - 360) + 'deg';
+
+        frag.style.setProperty('--x', x);
+        frag.style.setProperty('--y', y);
+        frag.style.setProperty('--rot', rot);
+
+        document.body.appendChild(frag);
+        frag.addEventListener('animationend', () => frag.remove());
+      }
+
+      mensajeFinal.textContent += "\n💥 El corazón ha estallado de tanto amor.";
+    }
+
+    function apagarPantalla(texto) {
+      document.body.style.backgroundColor = 'black';
+      document.body.innerHTML = `<h1 style="color:red; text-shadow:0 0 20px red;">${texto}</h1>`;
+    }
+  </script>
+</body>
+</html>
