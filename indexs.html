@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Zona Exclusiva - Descargar Videos</title>
+  <style>
+    body {
+      background: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .box {
+      background: #1e1e1e;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.6);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+      margin-bottom: 30px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      margin: 8px 0;
+      width: 100%;
+      max-width: 300px;
+    }
+    button {
+      background: #00c853;
+      color: white;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+    .msg {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .success { color: #00e676; }
+    .error { color: #ff5252; }
+    #descarga button {
+      width: 90%;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Generador -->
+  <div class="box" id="generador">
+    <h2>🔐 Generador de Clave</h2>
+    <p>Resuelve este reto matemático y espera 10 segundos:</p>
+    <p id="reto"></p>
+    <input type="number" id="respuesta" placeholder="Tu respuesta aquí">
+    <button id="verificarBtn" onclick="verificarReto()">Verificar</button>
+    <div id="msg-generador" class="msg"></div>
+  </div>
+
+  <!-- Verificador -->
+  <div class="box" id="verificador" style="display:none;">
+    <h2>🔑 Verificación de Clave</h2>
+    <input type="text" id="clave" placeholder="Ingresa la clave generada">
+    <button onclick="verificarClave()">Verificar y continuar</button>
+    <button id="recordatorioBtn" onclick="mostrarRecordatorio()">🔁 Recordatorio</button>
+    <div id="msg-verificacion" class="msg"></div>
+    <div id="clave-recordatorio" class="msg"></div>
+    <div id="descarga" style="display:none;">
+      <h3>📥 Elige un archivo para descargar:</h3>
+      <button onclick="descargar('10ZVoAcK5FtELnrZc0TrU_cIcUJ973dOR')">Descargar Video #1</button>
+      <button onclick="descargar('10hbCz1_384V-Pja6SE5cgeCfivlENgIu')">Descargar Video #2</button>
+    </div>
+  </div>
+
+  <script>
+    let claveGlobal = null;
+    let recordatorioActivo = false;
+
+    // Reto
+    const num1 = Math.floor(Math.random() * 10 + 1);
+    const num2 = Math.floor(Math.random() * 10 + 1);
+    const resultado = num1 * num2;
+    document.getElementById('reto').textContent = `¿Cuánto es ${num1} × ${num2}?`;
+
+    function verificarReto() {
+      const r = parseInt(document.getElementById('respuesta').value);
+      const btn = document.getElementById('verificarBtn');
+      const msg = document.getElementById('msg-generador');
+
+      if (r === resultado) {
+        msg.textContent = '✅ Correcto. Generando clave...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+          const clave = 'VIP-' + Math.floor(1000 + Math.random() * 9000);
+          localStorage.setItem('clave_unica', clave);
+          claveGlobal = clave;
+          msg.innerHTML = `✅ Tu clave es: <strong>${clave}</strong><br>Guárdala e ingrésala abajo.`;
+
+          setTimeout(() => {
+            document.getElementById('generador').style.display = 'none';
+            document.getElementById('verificador').style.display = 'block';
+          }, 3000);
+        }, 10000);
+      } else {
+        msg.textContent = '❌ Respuesta incorrecta.';
+        msg.className = 'msg error';
+      }
+    }
+
+    function verificarClave() {
+      const claveIngresada = document.getElementById('clave').value.trim();
+      const claveGuardada = localStorage.getItem('clave_unica');
+      const msg = document.getElementById('msg-verificacion');
+
+      if (claveIngresada === claveGuardada && claveGuardada !== null) {
+        msg.textContent = '✅ Clave correcta. Puedes descargar.';
+        msg.className = 'msg success';
+        localStorage.removeItem('clave_unica');
+        document.getElementById('descarga').style.display = 'block';
+      } else {
+        msg.textContent = '❌ Clave incorrecta o ya vencida.';
+        msg.className = 'msg error';
+      }
+    }
+
+    function mostrarRecordatorio() {
+      const cont = document.getElementById('clave-recordatorio');
+      if (!claveGlobal || recordatorioActivo) {
+        cont.textContent = '❌ No hay clave activa o ya expiró.';
+        cont.className = 'msg error';
+        return;
+      }
+
+      recordatorioActivo = true;
+      cont.innerHTML = `⏳ Recordatorio: tu clave era <strong>${claveGlobal}</strong><br>Validez: 30 segundos`;
+      cont.className = 'msg success';
+
+      setTimeout(() => {
+        localStorage.removeItem('clave_unica');
+        claveGlobal = null;
+        cont.textContent = '⚠️ Clave expirada. Recarga la página para obtener otra.';
+        cont.className = 'msg error';
+      }, 30000);
+    }
+
+    function descargar(id) {
+      const link = document.createElement('a');
+      link.href = `https://drive.google.com/uc?export=download&id=${id}`;
+      link.download = 'video.mp4';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
